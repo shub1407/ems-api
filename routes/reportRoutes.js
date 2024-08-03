@@ -7,9 +7,9 @@ import {
 } from "../controller/reportController.js"
 const reportRouter = express.Router()
 
-reportRouter.get("/so/generate/:soId", generateReportForSo)
+reportRouter.post("/so/generate/:soId", generateReportForSo)
 
-reportRouter.get("/state-head/generate/:state", generateReportForStateHead)
+reportRouter.post("/state-head/generate/:state", generateReportForStateHead)
 reportRouter.get("/admin/generate", generateReportForAdmin)
 reportRouter.post("/admin/generate/date", generateReportForAdminByDate)
 

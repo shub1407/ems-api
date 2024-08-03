@@ -7,9 +7,12 @@ async function signup(req, res) {
     //check if user is already logged in
     const existedUser = await userModel.findOne({ email })
     if (existedUser) {
-      return res
-        .status(409)
-        .json({ message: "User already exists", error: true, existedUser })
+      return res.json({
+        message: "User already exists",
+        error: false,
+        existedUser,
+        errorCode: 1,
+      })
     }
     const hashedPassword = await bcrypt.hash(password, 10)
     console.log(hashedPassword)
@@ -38,13 +41,15 @@ async function login(req, res) {
     const { email, password } = req.body
     const user = await userModel.findOne({ email })
     if (!user) {
-      return res.status(404).json({ message: "User not found", error: true })
+      return res.json({ message: "User not found", error: false, errorCode: 2 })
     }
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Invalid credentials", error: true })
+      return res.json({
+        message: "Invalid credentials",
+        error: false,
+        errorCode: 1,
+      })
     }
     //generate JWT token
     const payload = {
@@ -59,6 +64,7 @@ async function login(req, res) {
       message: "Logged in successfully",
       error: false,
       data: { token, userId: user._id, role: user.role },
+      errorCode: 0,
     })
   } catch (error) {
     res.status(500).json({ message: error.message, error: true })
