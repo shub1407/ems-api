@@ -7,6 +7,7 @@ import {
   addVisit,
   listVisits,
   punchOut,
+  attendanceReport,
 } from "../controller/attendanceController.js"
 
 attendanceRouter.post("/so/mark-attendance", markAttendance)
@@ -19,5 +20,8 @@ attendanceRouter.post("/so/shop/add-visit", addVisit)
 
 attendanceRouter.get("/so/list-visits/:id", listVisits)
 attendanceRouter.post("/so/punch-out/:attendanceId", punchOut)
+//attendance repot
+
+attendanceRouter.get("/report/:userId", attendanceReport)
 
 export default attendanceRouter

@@ -53,6 +53,10 @@ app.use("/api/admin", adminRouter)
 
 import attendanceRouter from "./routes/attendanceRoutes.js"
 app.use("/api/attendance", attendanceRouter)
+//leave routes
+
+import leaveRouter from "./routes/leaveRoutes.js"
+app.use("/api/leave", leaveRouter)
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`)
 })

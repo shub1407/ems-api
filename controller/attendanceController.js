@@ -6,7 +6,8 @@ import path from "path"
 import fs from "fs"
 import { dirname } from "path"
 import { fileURLToPath } from "url"
-
+import mongoose from "mongoose"
+import internal from "stream"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 //for so
@@ -168,3 +169,22 @@ export async function punchOut(req, res) {
     res.status(500).json({ message: error.message, error: true })
   }
 }
+
+//attendance report section
+
+export async function attendanceReport(req, res) {
+  let userId = req.params.userId
+  // convert to internal
+
+  console.log(typeof userId)
+
+  const attendanceData = await attendanceModel
+    .find({ userId })
+    .populate("shopVisited.shopId")
+  res.status(200).json({
+    message: "Attendance Report fetched successfully",
+    error: false,
+    data: { attendanceData },
+  })
+}
+//apply leave
