@@ -84,49 +84,45 @@ export async function getShopByDistrict(req, res) {
 //add visit
 
 export async function addVisit(req, res) {
-  let { shopId, attendanceId, description, remark } = req.body
-  const imageFile = req.files.image
-  const uploadPath = path.join(__dirname, "uploads", imageFile.name)
-  console.log(uploadPath)
-  console.log("image hai", imageFile)
-  //uploading image to cloudinary
-  imageFile.mv(uploadPath, (err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ message: "Some error occured in express-file upload" })
-    } else {
-      console.log("uploaded to local")
-    }
-  })
+  try {
+    const { shopId, attendanceId, description, remark } = req.body
+    const imageFile = req.files.image
 
-  const uploadedData = await cloudinary.uploader.upload(uploadPath, {
-    folder: "uploads",
-  })
-  console.log("url hai", uploadedData)
+    // Directly upload the file buffer to Cloudinary without saving it locally
+    const uploadedData = await cloudinary.uploader.upload(
+      imageFile.tempFilePath,
+      {
+        folder: "uploads",
+      }
+    )
 
-  //making entry to db
-  const updatedAttendance = await attendanceModel.findOneAndUpdate(
-    { _id: attendanceId }, // Filter: find the document with this `_id`
-    {
-      $push: {
-        shopVisited: {
-          shopId: shopId,
-          remark: remark,
-          description: description,
-          image: uploadedData.url,
+    console.log("Image uploaded to Cloudinary:", uploadedData.url)
 
-          // Set the `lastVisited` field to the current date and time
+    // Update your database with the Cloudinary URL
+    const updatedAttendance = await attendanceModel.findOneAndUpdate(
+      { _id: attendanceId }, // Filter: find the document with this `_id`
+      {
+        $push: {
+          shopVisited: {
+            shopId: shopId,
+            remark: remark,
+            description: description,
+            image: uploadedData.url,
+          },
         },
       },
-    },
-    { new: true }
-  )
-  res.status(200).json({
-    message: "Visit added successfully",
-    error: false,
-    data: updatedAttendance,
-  })
+      { new: true }
+    )
+
+    return res.status(200).json({
+      message: "Visit added successfully",
+      error: false,
+      data: updatedAttendance,
+    })
+  } catch (err) {
+    console.error("Error during file upload:", err)
+    return res.status(500).json({ message: "An error occurred", error: true })
+  }
 }
 
 //list-visits
