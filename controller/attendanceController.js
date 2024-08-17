@@ -13,7 +13,8 @@ const __dirname = dirname(__filename)
 //for so
 // mark attendance
 export async function markAttendance(req, res) {
-  const { userId, date, status, punchIn, role, districtVisited } = req.body
+  let { userId, date, status, punchIn, role, districtVisited } = req.body
+
   try {
     const attendance = new attendanceModel({
       userId,
@@ -84,45 +85,52 @@ export async function getShopByDistrict(req, res) {
 //add visit
 
 export async function addVisit(req, res) {
-  try {
-    const { shopId, attendanceId, description, remark } = req.body
-    const imageFile = req.files.image
+  //name is used for state head since no shop for state head
+  let { shopId, attendanceId, description, remark, name } = req.body
 
-    // Directly upload the file buffer to Cloudinary without saving it locally
-    const uploadedData = await cloudinary.uploader.upload(
-      imageFile.tempFilePath,
-      {
-        folder: "uploads",
+  const file = req.file
+  let uploadedData
+  console.log("image hai", file)
+  //uploading image to cloudinary
+
+  uploadedData = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto" },
+      (error, result) => {
+        if (error) {
+          return reject(error)
+        }
+        resolve(result)
       }
     )
 
-    console.log("Image uploaded to Cloudinary:", uploadedData.url)
+    uploadStream.end(req.file.buffer) // End the stream with the file buffer
+  })
+  console.log("url hai", uploadedData)
 
-    // Update your database with the Cloudinary URL
-    const updatedAttendance = await attendanceModel.findOneAndUpdate(
-      { _id: attendanceId }, // Filter: find the document with this `_id`
-      {
-        $push: {
-          shopVisited: {
-            shopId: shopId,
-            remark: remark,
-            description: description,
-            image: uploadedData.url,
-          },
+  // //making entry to db
+  const updatedAttendance = await attendanceModel.findOneAndUpdate(
+    { _id: attendanceId }, // Filter: find the document with this `_id`
+    {
+      $push: {
+        shopVisited: {
+          name: name,
+          shopId: shopId,
+          remark: remark,
+          description: description,
+          image: uploadedData.secure_url,
+
+          // Set the `lastVisited` field to the current date and time
         },
       },
-      { new: true }
-    )
-
-    return res.status(200).json({
-      message: "Visit added successfully",
-      error: false,
-      data: updatedAttendance,
-    })
-  } catch (err) {
-    console.error("Error during file upload:", err)
-    return res.status(500).json({ message: "An error occurred", error: true })
-  }
+    },
+    { new: true }
+  )
+  res.status(200).json({
+    message: "Visit added successfully",
+    error: false,
+    data: updatedAttendance,
+  })
 }
 
 //list-visits

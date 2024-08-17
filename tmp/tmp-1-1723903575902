@@ -12,7 +12,12 @@ const PORT = process.env.PORT || 4000
 //middleware
 app.use(cors())
 app.use(express.json())
-
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    createParentPath: true,
+  })
+)
 //db connection
 import connectDB from "./config/db.js"
 connectDB()
@@ -56,7 +61,34 @@ import leaveRouter from "./routes/leaveRoutes.js"
 app.use("/api/leave", leaveRouter)
 
 //checking file upload with multer
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
+// File upload endpoint
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  const file = req.file
+
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded" })
+  }
+
+  // Upload file to Cloudinary
+  cloudinary.uploader
+    .upload_stream({ resource_type: "auto" }, (error, result) => {
+      if (error) {
+        return res
+          .status(500)
+          .json({ message: "Upload to Cloudinary failed", error })
+      }
+
+      // Return the Cloudinary URL for the uploaded file
+      res.status(200).json({
+        message: "File uploaded successfully",
+        url: result.secure_url,
+      })
+    })
+    .end(file.buffer)
+})
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`)
 })
