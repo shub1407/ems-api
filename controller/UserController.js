@@ -79,9 +79,11 @@ async function changePassword(req, res) {
     }
     const isMatch = await bcrypt.compare(oPassword, user.password)
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Old password is incorrect", error: true })
+      return res.status(200).json({
+        message: "Old password is incorrect",
+        error: true,
+        errorCode: 1,
+      })
     }
     const hashedPassword = await bcrypt.hash(password, 10)
     user = await userModel.findByIdAndUpdate(

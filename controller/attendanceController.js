@@ -95,7 +95,7 @@ export async function addVisit(req, res) {
 
   uploadedData = await new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { resource_type: "auto" },
+      { resource_type: "auto", folder: "uploads" },
       (error, result) => {
         if (error) {
           return reject(error)
