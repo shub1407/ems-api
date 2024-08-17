@@ -87,27 +87,30 @@ export async function getShopByDistrict(req, res) {
 export async function addVisit(req, res) {
   //name is used for state head since no shop for state head
   let { shopId, attendanceId, description, remark, name } = req.body
-  const imageFile = req.files.image
-  const uploadPath = path.join(__dirname, "uploads", imageFile.name)
-  console.log(uploadPath)
-  console.log("image hai", imageFile)
+  if (!name) {
+    name = "Abc"
+  }
+  const file = req.file
+  let uploadedData
+  console.log("image hai", file)
   //uploading image to cloudinary
-  imageFile.mv(uploadPath, (err) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ message: "Some error occured in express-file upload" })
-    } else {
-      console.log("uploaded to local")
-    }
-  })
 
-  const uploadedData = await cloudinary.uploader.upload(uploadPath, {
-    folder: "uploads",
+  uploadedData = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto" },
+      (error, result) => {
+        if (error) {
+          return reject(error)
+        }
+        resolve(result)
+      }
+    )
+
+    uploadStream.end(req.file.buffer) // End the stream with the file buffer
   })
   console.log("url hai", uploadedData)
 
-  //making entry to db
+  // //making entry to db
   const updatedAttendance = await attendanceModel.findOneAndUpdate(
     { _id: attendanceId }, // Filter: find the document with this `_id`
     {
