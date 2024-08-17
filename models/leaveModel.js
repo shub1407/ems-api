@@ -28,9 +28,17 @@ const leaveSchema = new mongoose.Schema({
     ref: "User",
     default: null,
   },
+  message: {
+    type: String,
+    default: null,
+  },
   reason: {
     type: String,
     required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   createdAt: {
     type: Date,

@@ -13,7 +13,8 @@ const __dirname = dirname(__filename)
 //for so
 // mark attendance
 export async function markAttendance(req, res) {
-  const { userId, date, status, punchIn, role, districtVisited } = req.body
+  let { userId, date, status, punchIn, role, districtVisited } = req.body
+
   try {
     const attendance = new attendanceModel({
       userId,
@@ -84,7 +85,8 @@ export async function getShopByDistrict(req, res) {
 //add visit
 
 export async function addVisit(req, res) {
-  let { shopId, attendanceId, description, remark } = req.body
+  //name is used for state head since no shop for state head
+  let { shopId, attendanceId, description, remark, name } = req.body
   const imageFile = req.files.image
   const uploadPath = path.join(__dirname, "uploads", imageFile.name)
   console.log(uploadPath)
@@ -111,10 +113,11 @@ export async function addVisit(req, res) {
     {
       $push: {
         shopVisited: {
+          name: name,
           shopId: shopId,
           remark: remark,
           description: description,
-          image: uploadedData.url,
+          image: uploadedData.secure_url,
 
           // Set the `lastVisited` field to the current date and time
         },

@@ -4,6 +4,9 @@ const shopVisitedSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, // Assuming shopId refers to another model (e.g., Shop)
     ref: "Shop", // Reference to the Shop model (if applicable)
   },
+  name: {
+    type: String,
+  },
   image: {
     type: String,
     // Assuming image is optional
